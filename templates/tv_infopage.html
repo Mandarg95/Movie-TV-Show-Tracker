@@ -1,0 +1,175 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    TV Show Info
+{% endblock %}
+
+{% block main %}
+<body>
+    <div class="container mt-5">
+        <div class="row">
+            <!-- TV Show Poster -->
+            <div class="col-md-4">
+                <img src="https://image.tmdb.org/t/p/w500/{{ media['poster_path'] }}" class="img-fluid mb-4" alt="{{ media['name'] }}">
+            </div>
+
+            <!-- TV Show Details and User Input -->
+            <div class="col-md-8">
+                <h1>{{ media['name'] }}</h1>
+                <p><strong>Overview:</strong> {{ media['overview'] }}</p>
+
+                {% if list %}
+
+                <form action="/tv/{{ media['id'] }}" method="POST">
+
+                    <!-- Preselect Season -->
+                    <div class="mb-3">
+                        <label for="seasonSelect" class="form-label">Select Season</label>
+                        <select class="form-select" id="seasonSelect" name="season_number" required>
+                            <option value="" disabled>Select a season</option>
+                            {% for season in seasons %}
+                            <option value="{{ season['season_number'] }}" {% if list[0].season == season['season_number'] %}selected{% endif %}>{{ season['name'] }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Preselect Episode -->
+                    <div class="mb-3">
+                        <label for="episodeSelect" class="form-label">Select Episode</label>
+                        <select class="form-select" id="episodeSelect" name="episode" required>
+                            <option value="" disabled>Select an episode</option>
+                            {% if list %}
+                                {% for episode in range(1, media['number_of_episodes']) %}
+                                <option value="{{ episode }}" {% if list[0].episodes == episode %}selected{% endif %}>Episode {{ episode }}</option>
+                                {% endfor %}
+                            {% endif %}
+                        </select>
+                    </div>
+
+                    <!-- User Rating -->
+                    <div class="mb-3">
+                        <label for="userRating" class="form-label">Rate this movie</label>
+                        <select class="form-select" id="userRating" name="rating" required>
+                            <option value="" selected disabled>Select your rating</option>
+                            {% for i in range(1, 11) %}
+                                <option value="{{ i }}" {% if list and list[0].score == i %}selected{% endif %}>
+                                    {{ i }} - {{ i == 10 and 'Masterpiece' or i == 9 and 'Great' or i == 8 and 'Very Good' or i == 7 and 'Good' or i == 6 and 'Fine' or i == 5 and 'Average' or i == 4 and 'Bad' or i == 3 and 'Very Bad' or i == 2 and 'Horrible' or i == 1 and 'Appalling' }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Watching Status -->
+                    <div class="mb-3">
+                        <label for="watchingStatus" class="form-label">Status</label>
+                        <select class="form-select" id="watchingStatus" name="status" required>
+                            <option value="" selected disabled>Select status</option>
+                            <option value="watching" {% if list and list[0].status == 'watching' %}selected{% endif %}>Watching</option>
+                            <option value="completed" {% if list and list[0].status == 'completed' %}selected{% endif %}>Completed</option>
+                            <option value="on-hold" {% if list and list[0].status == 'on-hold' %}selected{% endif %}>On-Hold</option>
+                            <option value="dropped" {% if list and list[0].status == 'dropped' %}selected{% endif %}>Dropped</option>
+                            <option value="plan-to-watch" {% if list and list[0].status == 'plan-to-watch' %}selected{% endif %}>Plan to Watch</option>
+                        </select>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" class="btn btn-primary">Submit</button>
+
+                </form>
+                <div class="mt-4">
+                    <form action="/remove/tv/{{media['id']}}" method="POST">
+                        <button type="submit" class="btn btn-danger">Remove</button>
+                    </form>
+                </div>
+                {% else %}
+
+                <!-- Form to Submit User's Rating and Watching Status -->
+                <form action="/tv/{{media['id']}}" method="POST">
+
+                    <!-- User selects season -->
+                    <div class="mb-3">
+                        <label for="seasonSelect" class="form-label">Select Season</label>
+                        <select class="form-select" id="seasonSelect" name="season_number" required>
+                            <option value="" selected disabled>Select a season</option>
+                            {% for season in seasons %}
+                            <option value="{{ season['season_number'] }}">{{ season['name'] }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- User selects episode (to be updated based on selected season) -->
+                    <div class="mb-3">
+                        <label for="episodeSelect" class="form-label">Select Episode</label>
+                        <select class="form-select" id="episodeSelect" name="episode" required>
+                            <option value="" selected disabled>Select an episode</option>
+                        </select>
+                    </div>
+
+                    <!-- User Rating -->
+                    <div class="mb-3">
+                        <label for="userRating" class="form-label">Rate this TV show</label>
+                        <select class="form-select" id="userRating" name="rating" required>
+                            <option value="" selected disabled>Select your rating</option>
+                            <option value="10">10 - Masterpiece</option>
+                            <option value="9">9 - Great</option>
+                            <option value="8">8 - Very Good</option>
+                            <option value="7">7 - Good</option>
+                            <option value="6">6 - Fine</option>
+                            <option value="5">5 - Average</option>
+                            <option value="4">4 - Bad</option>
+                            <option value="3">3 - Very Bad</option>
+                            <option value="2">2 - Horrible</option>
+                            <option value="1">1 - Appalling</option>
+                        </select>
+                    </div>
+
+                    <!-- Watching Status -->
+                    <div class="mb-3">
+                        <label for="watchingStatus" class="form-label">Are you watching or completed?</label>
+                        <select class="form-select" id="watchingStatus" name="status" required>
+                            <option value="" selected disabled>Select status</option>
+                            <option value="watching">Watching</option>
+                            <option value="completed">Completed</option>
+                            <option value="on-hold">On-Hold</option>
+                            <option value="dropped">Dropped</option>
+                            <option value="plan-to-watch">Plan to Watch</option>
+                        </select>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Back to Homepage Button -->
+        <div class="mt-4">
+            <a href="/" class="btn btn-secondary">Back to Homepage</a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        document.getElementById('seasonSelect').addEventListener('change', function() {
+            const seasonNumber = this.value;
+            const episodeSelect = document.getElementById('episodeSelect');
+            episodeSelect.innerHTML = '';
+
+            fetch(`/api/tv/{{ media['id'] }}/season/${seasonNumber}`)
+                .then(response => response.json())
+                .then(data => {
+                    const episodes = data.episodes;
+                    episodes.forEach(episode => {
+                        const option = document.createElement('option');
+                        option.value = episode.episode_number;
+                        option.text = `Episode ${episode.episode_number}: ${episode.name}`;
+                        episodeSelect.appendChild(option);
+                    });
+                });
+        });
+    </script>
+
+</body>
+{% endblock %}
